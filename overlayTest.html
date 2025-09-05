@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Test</title>
+    <style>
+        .zoomOverlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background: black;
+            color: white;
+            padding: 0.1vw;
+            border-radius: 1vw;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .rightWrap {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .button {
+            cursor: pointer;
+        }
+
+        .blueButton {
+            border: blue 0.1vw solid;
+            border-radius: 1vw;
+            background: none;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="zoomOverlay">
+        <div class="zoomCounter">100%</div>
+        <div class="rightWrap">
+            <div class="zoomOutButton button">-</div>
+            <div class="zoomInButton button">+</div>
+            <div class="resetButton button blueButton">Reset</div>
+        </div>
+    </div>
+</body>
+</html>
