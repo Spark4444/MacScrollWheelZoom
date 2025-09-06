@@ -16,6 +16,7 @@
   justify-content: space-between;
   font-size: 13px;
   transform-origin: top right;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .rightWrap {
@@ -46,4 +47,25 @@
   font-size: 13px;
   align-items: center;
   justify-content: center;
+}
+
+.grey {
+  color: #5f5f5f;
+}
+
+@media (prefers-color-scheme: light) {
+    .zoomOverlay {
+      background: white;
+      color: black;
+    }
+    
+    .blueButton {
+      border: #a9c8fa 2px solid;
+      color: #0b57d0;
+      background: none;
+    }
+    
+    .grey {
+      color: #b9b9b9;
+    }
 }

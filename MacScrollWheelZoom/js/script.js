@@ -32,11 +32,83 @@ function checkIfValueIsValidZoomIndex(value, defaultValue) {
 // Initialize current zoom index
 let currentZoomIndex = zoomLevels.indexOf(100);
 
+// Reset, increase, decrease zoom level functions for overlay buttons
+function resetZoomLevel() {
+  const resetZoom = 100;
+  currentZoomIndex = zoomLevels.indexOf(resetZoom);
+  document.body.style.zoom = `${resetZoom}%`;
+  updateOverlayScale();
+  saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+}
+
+function increaseZoomLevel() {
+  if (currentZoomIndex < zoomLevels.length - 1) {
+    currentZoomIndex++;
+    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateOverlayScale();
+    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  }
+}
+
+function decreaseZoomLevel() {
+  if (currentZoomIndex > 0) {
+    currentZoomIndex--;
+    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateOverlayScale();
+    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  }
+}
+
+// Functions to set and reset button greyed out state
+function setButtonGrey(index) {
+  const buttons = document.querySelectorAll('.signButton');
+  if (buttons[index]) {
+    buttons[index].classList.add('grey');
+  }
+}
+
+function resetButton(index) {
+  const buttons = document.querySelectorAll('.signButton');
+  if (buttons[index]) {
+    buttons[index].classList.remove('grey');
+  }
+}
+
+function resetAllButtons() {
+  const buttons = document.querySelectorAll('.signButton');
+  buttons.forEach((button) => {
+    button.classList.remove('grey');
+  });
+}
+
+// Functions to set and reset button greyed out state
+function updateButtonStyles() {
+  if (currentZoomIndex <= 0) {
+    setButtonGrey(0);
+    resetButton(1);
+  }
+  else if (currentZoomIndex >= zoomLevels.length - 1) {
+    setButtonGrey(1);
+    resetButton(0);
+  }
+  else {
+    resetAllButtons();
+  }
+}
+
+// Function to update zoom counter display
+function updateZoomCounter() {
+  const zoomCounter = document.querySelector('.zoomCounter');
+  if (zoomCounter) {
+    zoomCounter.textContent = `${zoomLevels[currentZoomIndex]}%`;
+  }
+}
+
 // Function to update overlay scale to counteract zoom
 function updateOverlayScale() {
-    // Convert percentage to decimal
+  // Convert percentage to decimal
   const currentZoom = zoomLevels[currentZoomIndex] / 100;
-   // Calculate inverse scale
+  // Calculate inverse scale
   const inverseScale = 1 / currentZoom;
   const overlay = document.querySelector('.zoomOverlay');
   if (overlay) {
@@ -44,25 +116,151 @@ function updateOverlayScale() {
   }
 }
 
+function updateZoom() {
+  document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+}
+
+function updateOverlay() {
+  updateOverlayScale();
+  updateButtonStyles();
+  updateZoomCounter();
+}
+
+// Function to create the zoom overlay element
+function createOverlay() {
+  // Check if overlay already exists
+  if (document.querySelector('.zoomOverlay')) {
+    return;
+  }
+
+  // Create main overlay container
+  const overlay = document.createElement('div');
+  overlay.className = 'zoomOverlay';
+
+  // Apply styles directly to the overlay
+  Object.assign(overlay.style, {
+    position: 'fixed',
+    top: '0',
+    right: '32%',
+    background: '#1f1f1f',
+    color: '#c7c7c7',
+    padding: '0 17px',
+    borderRadius: '16px',
+    zIndex: '10000',
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row',
+    width: '220px',
+    height: '50px',
+    fontFamily: 'helvetica',
+    justifyContent: 'space-between',
+    fontSize: '13px',
+    transformOrigin: 'top right',
+  });
+
+  // Create zoom counter
+  const zoomCounter = document.createElement('div');
+  zoomCounter.className = 'zoomCounter';
+  zoomCounter.textContent = `${zoomLevels[currentZoomIndex]}%`;
+
+  // Create right wrapper
+  const rightWrap = document.createElement('div');
+  rightWrap.className = 'rightWrap';
+  Object.assign(rightWrap.style, {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '128px',
+  });
+
+  // Create zoom out button
+  const zoomOutButton = document.createElement('div');
+  zoomOutButton.className = 'zoomOutButton button';
+  zoomOutButton.textContent = '-';
+  Object.assign(zoomOutButton.style, {
+    cursor: 'pointer',
+    userSelect: 'none',
+    fontSize: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  });
+
+  // Create zoom in button
+  const zoomInButton = document.createElement('div');
+  zoomInButton.className = 'zoomInButton button';
+  zoomInButton.textContent = '+';
+  Object.assign(zoomInButton.style, {
+    cursor: 'pointer',
+    userSelect: 'none',
+    fontSize: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  });
+
+  // Create reset button
+  const resetButton = document.createElement('div');
+  resetButton.className = 'resetButton button blueButton';
+  resetButton.textContent = 'Reset';
+  Object.assign(resetButton.style, {
+    cursor: 'pointer',
+    userSelect: 'none',
+    border: '#047cb6 2px solid',
+    borderRadius: '32px',
+    display: 'flex',
+    height: '35px',
+    width: '60px',
+    background: 'none',
+    color: '#a8c7fa',
+    fontSize: '13px',
+    alignItems: 'center',
+    justifyContent: 'center',
+  });
+
+  // Add event listeners
+  zoomOutButton.addEventListener('click', decreaseZoomLevel);
+  zoomInButton.addEventListener('click', increaseZoomLevel);
+  resetButton.addEventListener('click', resetZoomLevel);
+
+  // Assemble the overlay
+  rightWrap.appendChild(zoomOutButton);
+  rightWrap.appendChild(zoomInButton);
+  rightWrap.appendChild(resetButton);
+
+  overlay.appendChild(zoomCounter);
+  overlay.appendChild(rightWrap);
+
+  // Add to document
+  document.body.appendChild(overlay);
+
+  // Initial update
+  updateOverlay();
+}
+
 // Load saved zoom index from Chrome storage so that zoom is persistent across sessions
 getFromChromeStorage('currentZoomIndex', (value) => {
   // Zoom parameters
   const resetZoom = 100;
   const zoomFactor = 25;
-  const overlay = `<div class="zoomOverlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>`;
   currentZoomIndex = checkIfValueIsValidZoomIndex(value, resetZoom);
 
-  // Set initial zoom and overlay scale
-  document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
-  // Wait for DOM to be ready before updating overlay scale
-  setTimeout(() => {
-    updateOverlayScale();
-  }, 100);
+  // Set initial zoom and create overlay
+  updateZoom();
+
+  // Wait for DOM to be ready before creating overlay
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      createOverlay();
+    });
+  } else {
+    createOverlay();
+  }
 
   document.addEventListener(
     'wheel',
     (event) => {
-      console.log(event);
       // Check if the Ctrl key is pressed (Cmd key on Mac)
       if (
         (event.ctrlKey && navigator.userAgent.indexOf('Mac OS X') === -1) ||
@@ -75,49 +273,41 @@ getFromChromeStorage('currentZoomIndex', (value) => {
 
         // Clamp the zoom index to valid ranges
         if (currentZoomIndex < 0) currentZoomIndex = 0;
-        if (currentZoomIndex >= zoomLevels.length)
-          currentZoomIndex = zoomLevels.length - 1;
+        if (currentZoomIndex >= zoomLevels.length) currentZoomIndex = zoomLevels.length - 1;
 
         // Apply the zoom level
-        document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+        updateZoom();
 
-        // Update overlay scale to counteract zoom
-        updateOverlayScale();
+        // Update overlay scale to counteract zoom and update counter
+        updateOverlay();
       }
 
       // Use passive to prevent errors if installed on windows machines
     },
     { passive: false }
   );
-
-  // Reset, increase, decrease zoom level functions for overlay buttons
-  function resetZoomLevel() {
-    currentZoomIndex = zoomLevels.indexOf(resetZoom);
-    document.body.style.zoom = `${resetZoom}%`;
-    updateOverlayScale();
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-  }
-
-  function increaseZoomLevel() {
-    if (currentZoomIndex < zoomLevels.length - 1) {
-      currentZoomIndex++;
-      document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
-      updateOverlayScale();
-      saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-    }
-  }
-
-  function decreaseZoomLevel() {
-    if (currentZoomIndex > 0) {
-      currentZoomIndex--;
-      document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
-      updateOverlayScale();
-      saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-    }
-  }
 });
 
 // Save the current zoom index before the page dies or is refreshed
 window.addEventListener('beforeunload', () => {
   saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+});
+
+// Also save when the page visibility changes (e.g., switching tabs)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  } 
+});
+
+// Listen for changes in Chrome storage to sync zoom level across tabs
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.currentZoomIndex) {
+    const newValue = changes.currentZoomIndex.newValue;
+    if (newValue !== currentZoomIndex) {
+      currentZoomIndex = checkIfValueIsValidZoomIndex(newValue, 100);
+      updateZoom();
+      updateOverlay();
+    }
+  }
 });
