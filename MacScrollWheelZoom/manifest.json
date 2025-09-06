@@ -2,15 +2,15 @@
    "manifest_version": 3,
    "name": "Mac Scroll Wheel Zoom",
    "description": "",
-   "version": "0.5.0",
+   "version": "0.7.5",
+    "permissions": [
+      "storage"
+    ],
    "content_scripts": [
       {
         "matches": ["<all_urls>"],
         "js": ["js/script.js"]
       }
-    ],
-    "permissions": [
-      "storage"
     ],
    "icons": {
       "16": "img/cat16.png",

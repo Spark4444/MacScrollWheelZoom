@@ -16,7 +16,7 @@
   justify-content: space-between;
   font-size: 13px;
   transform-origin: top right;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px #0000004d;
 }
 
 .rightWrap {

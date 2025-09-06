@@ -1,6 +1,7 @@
 const zoomLevels = [
   25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500,
 ];
+const currentOrigin = window.location.origin;
 
 // Function to save data to Chrome storage
 function saveToChromeStorage(key, value) {
@@ -14,26 +15,20 @@ function getFromChromeStorage(key, callback) {
   });
 }
 
-// Checks if a chrome storage value is set
-function checkIfValueIsValidZoomIndex(value, defaultValue) {
-  if (
-    value === undefined ||
-    value === null ||
-    isNaN(value) ||
-    value < 0 ||
-    value >= zoomLevels.length
-  ) {
-    return defaultValue;
-  } else {
-    return value;
+// Function to find the value for the current website from stored values
+function findValueOfTheCurrentWebsite(storedValues, defaultValue) {
+  if (storedValues && typeof storedValues === 'object') {
+    return storedValues[currentOrigin] || defaultValue;
   }
+  return defaultValue;
 }
 
 // Detect color scheme
 const currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const greyColor = currentMode === 'dark' ? '#5f5f5f' : '#b9b9b9';
+const greyColor = currentMode === 'dark' ? '#b9b9b9' : '#5f5f5f';
 // Initialize current zoom index
 let currentZoomIndex = zoomLevels.indexOf(100);
+const resetZoom = currentZoomIndex;
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
@@ -109,8 +104,7 @@ function updateOverlay() {
 
 // Reset, increase, decrease zoom level functions for overlay buttons
 function resetZoomLevel() {
-  const resetZoom = 100;
-  currentZoomIndex = zoomLevels.indexOf(resetZoom);
+  currentZoomIndex = resetZoom;
   document.body.style.zoom = `${resetZoom}%`;
   updateOverlay();
   saveToChromeStorage('currentZoomIndex', currentZoomIndex);
@@ -134,6 +128,104 @@ function decreaseZoomLevel() {
   }
 }
 
+// Inject CSS styles dynamically
+function injectOverlayStyles() {
+  if (document.querySelector('#zoom-overlay-styles')) {
+    return; // Already injected
+  }
+
+  const style = document.createElement('style');
+  style.id = 'zoom-overlay-styles';
+  style.textContent = `
+    .zoomOverlay {
+      position: fixed;
+      top: 0;
+      right: 32%;
+      background: ${currentMode ? '#1f1f1f' : '#fff'};
+      color: ${currentMode ? '#c7c7c7' : '#000'};
+      padding: 0 17px;
+      border-radius: 16px;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      width: 220px;
+      height: 50px;
+      font-family: helvetica;
+      justify-content: space-between;
+      font-size: 13px;
+      transform-origin: top right;
+      box-shadow: 0 4px 8px #0000004d;
+    }
+    
+    .zoomOverlay .rightWrap {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 128px;
+    }
+    
+    .zoomOverlay .button {
+      cursor: pointer;
+      user-select: none;
+      font-size: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0;
+      margin: 0;
+      height: 35px;
+      width: 35px;
+      color: ${currentMode ? '#c7c7c7' : '#000'};
+      border-radius: 32px;
+      transition: background 0.2s;
+    }
+    
+    .zoomOverlay .blueButton {
+      border: ${currentMode ? '#047cb6 2px solid' : '#a9c8fa 2px solid'};
+      border-radius: 32px;
+      width: 60px;
+      color: ${currentMode ? '#a8c7fa' : '#0b57d0'};
+      font-size: 13px;
+    }
+  `;
+  
+  document.head.appendChild(style);
+}
+
+// Create overlay from template
+function createOverlayFromTemplate() {
+  const template = `
+    <div class="zoomOverlay">
+      <div class="zoomCounter">${zoomLevels[currentZoomIndex]}%</div>
+      <div class="rightWrap">
+        <div class="zoomOutButton button signButton">-</div>
+        <div class="zoomInButton button signButton">+</div>
+        <div class="resetButton button blueButton">Reset</div>
+      </div>
+    </div>
+  `;
+  
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = template;
+  return tempDiv.firstElementChild;
+}
+
+// Add event listeners to overlay elements
+function addOverlayEventListeners(overlay) {
+  const zoomOutButton = overlay.querySelector('.zoomOutButton');
+  const zoomInButton = overlay.querySelector('.zoomInButton');
+  const resetButton = overlay.querySelector('.resetButton');
+
+  zoomOutButton.addEventListener('click', decreaseZoomLevel);
+  zoomInButton.addEventListener('click', increaseZoomLevel);
+  resetButton.addEventListener('click', resetZoomLevel);
+}
+
 // Function to create the zoom overlay element
 function createOverlay() {
   // Check if overlay already exists
@@ -141,111 +233,14 @@ function createOverlay() {
     return;
   }
 
-  // Styles from style.css
-  const overlayBaseStyles = {
-    position: 'fixed',
-    top: '0',
-    right: '32%',
-    background: currentMode === 'dark' ? '#1f1f1f' : '#fff',
-    color: currentMode === 'dark' ? '#c7c7c7' : '#000',
-    padding: '0 17px',
-    borderRadius: '16px',
-    zIndex: '10000',
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'row',
-    width: '220px',
-    height: '50px',
-    fontFamily: 'helvetica',
-    justifyContent: 'space-between',
-    fontSize: '13px',
-    transformOrigin: 'top right',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-  };
-  const rightWrapStyles = {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '128px'
-  };
-  const buttonStyles = {
-    cursor: 'pointer',
-    userSelect: 'none',
-    fontSize: '25px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'none',
-    border: 'none',
-    outline: 'none',
-    padding: '0',
-    margin: '0',
-    height: '35px',
-    width: '35px',
-    color: currentMode === 'dark' ? '#c7c7c7' : '#000',
-    borderRadius: '32px',
-    transition: 'background 0.2s',
-  };
-  const blueButtonStyles = {
-    border: currentMode === 'dark' ? '#047cb6 2px solid' : '#a9c8fa 2px solid',
-    borderRadius: '32px',
-    display: 'flex',
-    height: '35px',
-    width: '60px',
-    background: 'none',
-    color: currentMode === 'dark' ? '#a8c7fa' : '#0b57d0',
-    fontSize: '13px',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
+  // Inject CSS if not already present
+  injectOverlayStyles();
 
-  // Create main overlay container
-  const overlay = document.createElement('div');
-  overlay.className = 'zoomOverlay';
-  Object.assign(overlay.style, overlayBaseStyles);
-
-  // Create zoom counter
-  const zoomCounter = document.createElement('div');
-  zoomCounter.className = 'zoomCounter';
-  zoomCounter.textContent = `${zoomLevels[currentZoomIndex]}%`;
-
-  // Create right wrapper
-  const rightWrap = document.createElement('div');
-  rightWrap.className = 'rightWrap';
-  Object.assign(rightWrap.style, rightWrapStyles);
-
-  // Create zoom out button
-  const zoomOutButton = document.createElement('div');
-  zoomOutButton.className = 'zoomOutButton button signButton';
-  zoomOutButton.textContent = '-';
-  Object.assign(zoomOutButton.style, buttonStyles);
-
-  // Create zoom in button
-  const zoomInButton = document.createElement('div');
-  zoomInButton.className = 'zoomInButton button signButton';
-  zoomInButton.textContent = '+';
-  Object.assign(zoomInButton.style, buttonStyles);
-
-  // Create reset button
-  const resetButton = document.createElement('div');
-  resetButton.className = 'resetButton button blueButton';
-  resetButton.textContent = 'Reset';
-  Object.assign(resetButton.style, buttonStyles);
-  Object.assign(resetButton.style, blueButtonStyles);
-
+  // Create overlay using template
+  const overlay = createOverlayFromTemplate();
+  
   // Add event listeners
-  zoomOutButton.addEventListener('click', decreaseZoomLevel);
-  zoomInButton.addEventListener('click', increaseZoomLevel);
-  resetButton.addEventListener('click', resetZoomLevel);
-
-  // Assemble the overlay
-  rightWrap.appendChild(zoomOutButton);
-  rightWrap.appendChild(zoomInButton);
-  rightWrap.appendChild(resetButton);
-
-  overlay.appendChild(zoomCounter);
-  overlay.appendChild(rightWrap);
+  addOverlayEventListeners(overlay);
 
   // Add to document
   document.body.appendChild(overlay);
@@ -255,11 +250,10 @@ function createOverlay() {
 }
 
 // Load saved zoom index from Chrome storage so that zoom is persistent across sessions
-getFromChromeStorage('currentZoomIndex', (value) => {
+getFromChromeStorage('websiteLevels', (value) => {
   // Zoom parameters
-  const resetZoom = 100;
-  const zoomFactor = 25;
-  currentZoomIndex = checkIfValueIsValidZoomIndex(value, resetZoom);
+  currentZoomIndex = findValueOfTheCurrentWebsite(value, resetZoom);
+  console.log(value, currentZoomIndex);
 
   // Set initial zoom and create overlay
   updateZoom();
@@ -305,22 +299,28 @@ getFromChromeStorage('currentZoomIndex', (value) => {
 
 // Save the current zoom index before the page dies or is refreshed
 window.addEventListener('beforeunload', () => {
-  saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  getFromChromeStorage('websiteLevels', (storedValues) => {
+    const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
+    saveToChromeStorage('websiteLevels', updatedValues);
+  });
 });
 
 // Also save when the page visibility changes (e.g., switching tabs)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-  } 
+    getFromChromeStorage('websiteLevels', (storedValues) => {
+      const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
+      saveToChromeStorage('websiteLevels', updatedValues);
+    });
+  }
 });
 
 // Listen for changes in Chrome storage to sync zoom level across tabs
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.currentZoomIndex) {
-    const newValue = changes.currentZoomIndex.newValue;
+  if (area === 'sync' && changes.websiteLevels) {
+    const newValue = findValueOfTheCurrentWebsite(changes.websiteLevels.newValue, resetZoom);
     if (newValue !== currentZoomIndex) {
-      currentZoomIndex = checkIfValueIsValidZoomIndex(newValue, 100);
+      currentZoomIndex = newValue;
       updateZoom();
       updateOverlay();
     }
