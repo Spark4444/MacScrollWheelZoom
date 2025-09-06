@@ -29,55 +29,36 @@ function checkIfValueIsValidZoomIndex(value, defaultValue) {
   }
 }
 
+// Detect color scheme
+const currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const greyColor = currentMode === 'dark' ? '#5f5f5f' : '#b9b9b9';
 // Initialize current zoom index
 let currentZoomIndex = zoomLevels.indexOf(100);
-
-// Reset, increase, decrease zoom level functions for overlay buttons
-function resetZoomLevel() {
-  const resetZoom = 100;
-  currentZoomIndex = zoomLevels.indexOf(resetZoom);
-  document.body.style.zoom = `${resetZoom}%`;
-  updateOverlayScale();
-  saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-}
-
-function increaseZoomLevel() {
-  if (currentZoomIndex < zoomLevels.length - 1) {
-    currentZoomIndex++;
-    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
-    updateOverlayScale();
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-  }
-}
-
-function decreaseZoomLevel() {
-  if (currentZoomIndex > 0) {
-    currentZoomIndex--;
-    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
-    updateOverlayScale();
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
-  }
-}
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
   const buttons = document.querySelectorAll('.signButton');
   if (buttons[index]) {
-    buttons[index].classList.add('grey');
+    const currentButton = buttons[index];
+    currentButton.style.color = greyColor;
+    currentButton.style.cursor = 'auto';
   }
 }
 
 function resetButton(index) {
   const buttons = document.querySelectorAll('.signButton');
   if (buttons[index]) {
-    buttons[index].classList.remove('grey');
+    const currentButton = buttons[index];
+    currentButton.style.color = '';
+    currentButton.style.cursor = 'pointer';
   }
 }
 
 function resetAllButtons() {
   const buttons = document.querySelectorAll('.signButton');
   buttons.forEach((button) => {
-    button.classList.remove('grey');
+    button.style.color = '';
+    button.style.cursor = 'pointer';
   });
 }
 
@@ -126,6 +107,33 @@ function updateOverlay() {
   updateZoomCounter();
 }
 
+// Reset, increase, decrease zoom level functions for overlay buttons
+function resetZoomLevel() {
+  const resetZoom = 100;
+  currentZoomIndex = zoomLevels.indexOf(resetZoom);
+  document.body.style.zoom = `${resetZoom}%`;
+  updateOverlay();
+  saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+}
+
+function increaseZoomLevel() {
+  if (currentZoomIndex < zoomLevels.length - 1) {
+    currentZoomIndex++;
+    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateOverlay();
+    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  }
+}
+
+function decreaseZoomLevel() {
+  if (currentZoomIndex > 0) {
+    currentZoomIndex--;
+    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateOverlay();
+    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  }
+}
+
 // Function to create the zoom overlay element
 function createOverlay() {
   // Check if overlay already exists
@@ -133,17 +141,13 @@ function createOverlay() {
     return;
   }
 
-  // Create main overlay container
-  const overlay = document.createElement('div');
-  overlay.className = 'zoomOverlay';
-
-  // Apply styles directly to the overlay
-  Object.assign(overlay.style, {
+  // Styles from style.css
+  const overlayBaseStyles = {
     position: 'fixed',
     top: '0',
     right: '32%',
-    background: '#1f1f1f',
-    color: '#c7c7c7',
+    background: currentMode === 'dark' ? '#1f1f1f' : '#fff',
+    color: currentMode === 'dark' ? '#c7c7c7' : '#000',
     padding: '0 17px',
     borderRadius: '16px',
     zIndex: '10000',
@@ -156,7 +160,50 @@ function createOverlay() {
     justifyContent: 'space-between',
     fontSize: '13px',
     transformOrigin: 'top right',
-  });
+    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+  };
+  const rightWrapStyles = {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '128px'
+  };
+  const buttonStyles = {
+    cursor: 'pointer',
+    userSelect: 'none',
+    fontSize: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'none',
+    border: 'none',
+    outline: 'none',
+    padding: '0',
+    margin: '0',
+    height: '35px',
+    width: '35px',
+    color: currentMode === 'dark' ? '#c7c7c7' : '#000',
+    borderRadius: '32px',
+    transition: 'background 0.2s',
+  };
+  const blueButtonStyles = {
+    border: currentMode === 'dark' ? '#047cb6 2px solid' : '#a9c8fa 2px solid',
+    borderRadius: '32px',
+    display: 'flex',
+    height: '35px',
+    width: '60px',
+    background: 'none',
+    color: currentMode === 'dark' ? '#a8c7fa' : '#0b57d0',
+    fontSize: '13px',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  // Create main overlay container
+  const overlay = document.createElement('div');
+  overlay.className = 'zoomOverlay';
+  Object.assign(overlay.style, overlayBaseStyles);
 
   // Create zoom counter
   const zoomCounter = document.createElement('div');
@@ -166,58 +213,26 @@ function createOverlay() {
   // Create right wrapper
   const rightWrap = document.createElement('div');
   rightWrap.className = 'rightWrap';
-  Object.assign(rightWrap.style, {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '128px',
-  });
+  Object.assign(rightWrap.style, rightWrapStyles);
 
   // Create zoom out button
   const zoomOutButton = document.createElement('div');
-  zoomOutButton.className = 'zoomOutButton button';
+  zoomOutButton.className = 'zoomOutButton button signButton';
   zoomOutButton.textContent = '-';
-  Object.assign(zoomOutButton.style, {
-    cursor: 'pointer',
-    userSelect: 'none',
-    fontSize: '25px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  });
+  Object.assign(zoomOutButton.style, buttonStyles);
 
   // Create zoom in button
   const zoomInButton = document.createElement('div');
-  zoomInButton.className = 'zoomInButton button';
+  zoomInButton.className = 'zoomInButton button signButton';
   zoomInButton.textContent = '+';
-  Object.assign(zoomInButton.style, {
-    cursor: 'pointer',
-    userSelect: 'none',
-    fontSize: '25px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  });
+  Object.assign(zoomInButton.style, buttonStyles);
 
   // Create reset button
   const resetButton = document.createElement('div');
   resetButton.className = 'resetButton button blueButton';
   resetButton.textContent = 'Reset';
-  Object.assign(resetButton.style, {
-    cursor: 'pointer',
-    userSelect: 'none',
-    border: '#047cb6 2px solid',
-    borderRadius: '32px',
-    display: 'flex',
-    height: '35px',
-    width: '60px',
-    background: 'none',
-    color: '#a8c7fa',
-    fontSize: '13px',
-    alignItems: 'center',
-    justifyContent: 'center',
-  });
+  Object.assign(resetButton.style, buttonStyles);
+  Object.assign(resetButton.style, blueButtonStyles);
 
   // Add event listeners
   zoomOutButton.addEventListener('click', decreaseZoomLevel);
