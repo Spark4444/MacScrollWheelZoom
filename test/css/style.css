@@ -53,6 +53,32 @@
   color: #5f5f5f;
 }
 
+.appear {
+  animation: appear 0.3s linear;
+}
+
+.disappear {
+  animation: disappear 0.3s linear;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-color-scheme: light) {
     .zoomOverlay {
       background: white;

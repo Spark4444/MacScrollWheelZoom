@@ -18,24 +18,23 @@ function getFromChromeStorage(key, callback) {
 // Function to find the value for the current website from stored values
 function findValueOfTheCurrentWebsite(storedValues, defaultValue) {
   if (storedValues && typeof storedValues === 'object') {
-    return storedValues[currentOrigin] || defaultValue;
+    return storedValues[currentOrigin] ?? defaultValue;
   }
   return defaultValue;
 }
 
-// Detect color scheme
-const currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const greyColor = currentMode === 'dark' ? '#b9b9b9' : '#5f5f5f';
 // Initialize current zoom index
 let currentZoomIndex = zoomLevels.indexOf(100);
 const resetZoom = currentZoomIndex;
+const isMac = navigator.userAgent.indexOf('Mac OS X') !== -1;
+let overlayTimeout, disappearTimeout;
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
   const buttons = document.querySelectorAll('.signButton');
   if (buttons[index]) {
     const currentButton = buttons[index];
-    currentButton.style.color = greyColor;
+    currentButton.classList.add('grey');
     currentButton.style.cursor = 'auto';
   }
 }
@@ -44,7 +43,7 @@ function resetButton(index) {
   const buttons = document.querySelectorAll('.signButton');
   if (buttons[index]) {
     const currentButton = buttons[index];
-    currentButton.style.color = '';
+    currentButton.classList.remove('grey');
     currentButton.style.cursor = 'pointer';
   }
 }
@@ -52,7 +51,7 @@ function resetButton(index) {
 function resetAllButtons() {
   const buttons = document.querySelectorAll('.signButton');
   buttons.forEach((button) => {
-    button.style.color = '';
+    button.classList.remove('grey');
     button.style.cursor = 'pointer';
   });
 }
@@ -92,39 +91,58 @@ function updateOverlayScale() {
   }
 }
 
+// Function to update the zoom level of the page
 function updateZoom() {
   document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
 }
 
+// Function to update all overlay elements
 function updateOverlay() {
   updateOverlayScale();
   updateButtonStyles();
   updateZoomCounter();
 }
 
+// Function to hide overlay after a delay
+function hideOverlay(delay = 2000) {
+  const overlay = document.querySelector('.zoomOverlay');
+  if (overlay) {
+    overlay.style.display = '';
+    if (overlayTimeout) clearTimeout(overlayTimeout);
+    if (disappearTimeout) clearTimeout(disappearTimeout);
+    overlayTimeout = setTimeout(() => {
+      overlay.classList.remove('disappear');
+      overlay.style.display = 'none';
+    }, delay);
+    disappearTimeout = setTimeout(() => {
+      overlay.classList.add('disappear');
+    }, delay - 300);
+  }
+}
+
 // Reset, increase, decrease zoom level functions for overlay buttons
 function resetZoomLevel() {
   currentZoomIndex = resetZoom;
-  document.body.style.zoom = `${resetZoom}%`;
+  updateZoom();
   updateOverlay();
-  saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+  hideOverlay();
 }
-
+ 
 function increaseZoomLevel() {
   if (currentZoomIndex < zoomLevels.length - 1) {
     currentZoomIndex++;
-    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateZoom();
     updateOverlay();
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+    hideOverlay();
   }
 }
 
 function decreaseZoomLevel() {
   if (currentZoomIndex > 0) {
     currentZoomIndex--;
-    document.body.style.zoom = `${zoomLevels[currentZoomIndex]}%`;
+    updateZoom();
     updateOverlay();
-    saveToChromeStorage('currentZoomIndex', currentZoomIndex);
+    hideOverlay();
   }
 }
 
@@ -141,8 +159,8 @@ function injectOverlayStyles() {
       position: fixed;
       top: 0;
       right: 32%;
-      background: ${currentMode ? '#1f1f1f' : '#fff'};
-      color: ${currentMode ? '#c7c7c7' : '#000'};
+      background: #1f1f1f;
+      color: #c7c7c7;
       padding: 0 17px;
       border-radius: 16px;
       z-index: 10000;
@@ -157,40 +175,82 @@ function injectOverlayStyles() {
       transform-origin: top right;
       box-shadow: 0 4px 8px #0000004d;
     }
-    
-    .zoomOverlay .rightWrap {
+
+    .rightWrap {
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
       width: 128px;
     }
-    
-    .zoomOverlay .button {
+
+    .button {
       cursor: pointer;
       user-select: none;
       font-size: 25px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: none;
-      border: none;
-      outline: none;
-      padding: 0;
-      margin: 0;
-      height: 35px;
-      width: 35px;
-      color: ${currentMode ? '#c7c7c7' : '#000'};
-      border-radius: 32px;
-      transition: background 0.2s;
     }
-    
-    .zoomOverlay .blueButton {
-      border: ${currentMode ? '#047cb6 2px solid' : '#a9c8fa 2px solid'};
+
+    .blueButton {
+      border: #047cb6 2px solid;
       border-radius: 32px;
+      display: flex;
+      height: 35px;
       width: 60px;
-      color: ${currentMode ? '#a8c7fa' : '#0b57d0'};
+      background: none;
+      color: #a8c7fa;
       font-size: 13px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .grey {
+      color: #5f5f5f;
+    }
+
+    .appear {
+      animation: appear 0.3s linear;
+    }
+
+    .disappear {
+      animation: disappear 0.3s linear;
+    }
+
+    @keyframes appear {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes disappear {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+        .zoomOverlay {
+          background: white;
+          color: black;
+        }
+        
+        .blueButton {
+          border: #a9c8fa 2px solid;
+          color: #0b57d0;
+          background: none;
+        }
+        
+        .grey {
+          color: #b9b9b9;
+        }
     }
   `;
   
@@ -200,7 +260,7 @@ function injectOverlayStyles() {
 // Create overlay from template
 function createOverlayFromTemplate() {
   const template = `
-    <div class="zoomOverlay">
+    <div class="zoomOverlay appear" style="display: none;">
       <div class="zoomCounter">${zoomLevels[currentZoomIndex]}%</div>
       <div class="rightWrap">
         <div class="zoomOutButton button signButton">-</div>
@@ -253,7 +313,6 @@ function createOverlay() {
 getFromChromeStorage('websiteLevels', (value) => {
   // Zoom parameters
   currentZoomIndex = findValueOfTheCurrentWebsite(value, resetZoom);
-  console.log(value, currentZoomIndex);
 
   // Set initial zoom and create overlay
   updateZoom();
@@ -272,7 +331,7 @@ getFromChromeStorage('websiteLevels', (value) => {
     (event) => {
       // Check if the Ctrl key is pressed (Cmd key on Mac)
       if (
-        (event.ctrlKey && navigator.userAgent.indexOf('Mac OS X') === -1) ||
+        (event.ctrlKey && !isMac) ||
         event.metaKey
       ) {
         event.preventDefault();
@@ -281,8 +340,16 @@ getFromChromeStorage('websiteLevels', (value) => {
         currentZoomIndex += zoomIndexIncrease;
 
         // Clamp the zoom index to valid ranges
-        if (currentZoomIndex < 0) currentZoomIndex = 0;
-        if (currentZoomIndex >= zoomLevels.length) currentZoomIndex = zoomLevels.length - 1;
+        if (currentZoomIndex < 0) {
+          currentZoomIndex = 0;
+        }
+        else if (currentZoomIndex >= zoomLevels.length) {
+          currentZoomIndex = zoomLevels.length - 1;
+        }
+        else {
+          // Hide overlay after zoom
+          hideOverlay();
+        }
 
         // Apply the zoom level
         updateZoom();
@@ -295,23 +362,46 @@ getFromChromeStorage('websiteLevels', (value) => {
     },
     { passive: false }
   );
+
+  // Check if the Ctrl key is pressed (Cmd key on Mac) along with +, -, or 0
+  document.addEventListener('keydown', (event) => {
+    if (
+      (event.ctrlKey && !isMac) ||
+      event.metaKey
+    ) {
+      switch (event.key) {
+        case '=':
+          event.preventDefault();
+          increaseZoomLevel();
+          break;
+        case '-':
+          event.preventDefault();
+          decreaseZoomLevel();
+          break;
+      }
+    }
+  }, { passive: false });
 });
+
+// Function to update the zoom level for the current website
+function updateValueOfCurrentWebsiteZoom() {
+    getFromChromeStorage('websiteLevels', (storedValues) => {
+      if (storedValues[currentOrigin] !== currentZoomIndex) {
+        const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
+        saveToChromeStorage('websiteLevels', updatedValues);
+      }
+    });
+}
 
 // Save the current zoom index before the page dies or is refreshed
 window.addEventListener('beforeunload', () => {
-  getFromChromeStorage('websiteLevels', (storedValues) => {
-    const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
-    saveToChromeStorage('websiteLevels', updatedValues);
-  });
+  updateValueOfCurrentWebsiteZoom();
 });
 
 // Also save when the page visibility changes (e.g., switching tabs)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    getFromChromeStorage('websiteLevels', (storedValues) => {
-      const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
-      saveToChromeStorage('websiteLevels', updatedValues);
-    });
+    updateValueOfCurrentWebsiteZoom();
   }
 });
 
