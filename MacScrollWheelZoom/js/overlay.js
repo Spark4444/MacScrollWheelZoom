@@ -1,33 +1,17 @@
+// Define available zoom levels
 const zoomLevels = [
   25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500,
 ];
-const currentOrigin = window.location.origin;
-
-// Function to save data to Chrome storage
-function saveToChromeStorage(key, value) {
-  chrome.storage.sync.set({ [key]: value });
-}
-
-// Function to get data from Chrome storage
-function getFromChromeStorage(key, callback) {
-  chrome.storage.sync.get([key], function (result) {
-    callback(result[key]);
-  });
-}
-
-// Function to find the value for the current website from stored values
-function findValueOfTheCurrentWebsite(storedValues, defaultValue) {
-  if (storedValues && typeof storedValues === 'object') {
-    return storedValues[currentOrigin] ?? defaultValue;
-  }
-  return defaultValue;
-}
 
 // Initialize current zoom index
 let currentZoomIndex = zoomLevels.indexOf(100);
 const resetZoom = currentZoomIndex;
-const isMac = navigator.userAgent.indexOf('Mac OS X') !== -1;
+
 let overlayTimeout, disappearTimeout;
+
+// Get URLs for zoom button images
+const minusZoomImage = chrome.runtime.getURL('img/minus_zoom.svg');
+const plusZoomImage = chrome.runtime.getURL('img/plus_zoom.svg');
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
@@ -308,111 +292,3 @@ function createOverlay() {
   // Initial update
   updateOverlay();
 }
-
-// Load saved zoom index from Chrome storage so that zoom is persistent across sessions
-getFromChromeStorage('websiteLevels', (value) => {
-  // Zoom parameters
-  currentZoomIndex = findValueOfTheCurrentWebsite(value, resetZoom);
-
-  // Set initial zoom and create overlay
-  updateZoom();
-
-  // Wait for DOM to be ready before creating overlay
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      createOverlay();
-    });
-  } else {
-    createOverlay();
-  }
-
-  document.addEventListener(
-    'wheel',
-    (event) => {
-      // Check if the Ctrl key is pressed (Cmd key on Mac)
-      if (
-        (event.ctrlKey && !isMac) ||
-        event.metaKey
-      ) {
-        event.preventDefault();
-        // Determine zoom direction based on scroll direction
-        const zoomIndexIncrease = event.deltaY > 0 ? -1 : 1;
-        currentZoomIndex += zoomIndexIncrease;
-
-        // Clamp the zoom index to valid ranges
-        if (currentZoomIndex < 0) {
-          currentZoomIndex = 0;
-        }
-        else if (currentZoomIndex >= zoomLevels.length) {
-          currentZoomIndex = zoomLevels.length - 1;
-        }
-        else {
-          // Hide overlay after zoom
-          hideOverlay();
-        }
-
-        // Apply the zoom level
-        updateZoom();
-
-        // Update overlay scale to counteract zoom and update counter
-        updateOverlay();
-      }
-
-      // Use passive to prevent errors if installed on windows machines
-    },
-    { passive: false }
-  );
-
-  // Check if the Ctrl key is pressed (Cmd key on Mac) along with +, -, or 0
-  document.addEventListener('keydown', (event) => {
-    if (
-      (event.ctrlKey && !isMac) ||
-      event.metaKey
-    ) {
-      switch (event.key) {
-        case '=':
-          event.preventDefault();
-          increaseZoomLevel();
-          break;
-        case '-':
-          event.preventDefault();
-          decreaseZoomLevel();
-          break;
-      }
-    }
-  }, { passive: false });
-});
-
-// Function to update the zoom level for the current website
-function updateValueOfCurrentWebsiteZoom() {
-    getFromChromeStorage('websiteLevels', (storedValues) => {
-      if (storedValues[currentOrigin] !== currentZoomIndex) {
-        const updatedValues = { ...storedValues, [currentOrigin]: currentZoomIndex };
-        saveToChromeStorage('websiteLevels', updatedValues);
-      }
-    });
-}
-
-// Save the current zoom index before the page dies or is refreshed
-window.addEventListener('beforeunload', () => {
-  updateValueOfCurrentWebsiteZoom();
-});
-
-// Also save when the page visibility changes (e.g., switching tabs)
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    updateValueOfCurrentWebsiteZoom();
-  }
-});
-
-// Listen for changes in Chrome storage to sync zoom level across tabs
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.websiteLevels) {
-    const newValue = findValueOfTheCurrentWebsite(changes.websiteLevels.newValue, resetZoom);
-    if (newValue !== currentZoomIndex) {
-      currentZoomIndex = newValue;
-      updateZoom();
-      updateOverlay();
-    }
-  }
-});
