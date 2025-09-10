@@ -19,7 +19,7 @@ function setButtonGrey(index) {
   if (buttons[index]) {
     const currentButton = buttons[index];
     currentButton.classList.add('grey');
-    currentButton.style.cursor = 'auto';
+    currentButton.classList.remove('buttonHover');
   }
 }
 
@@ -28,7 +28,7 @@ function resetButton(index) {
   if (buttons[index]) {
     const currentButton = buttons[index];
     currentButton.classList.remove('grey');
-    currentButton.style.cursor = 'pointer';
+    currentButton.classList.add('buttonHover');
   }
 }
 
@@ -36,7 +36,7 @@ function resetAllButtons() {
   const buttons = document.querySelectorAll('.signButton');
   buttons.forEach((button) => {
     button.classList.remove('grey');
-    button.style.cursor = 'pointer';
+    button.classList.add('buttonHover');
   });
 }
 
@@ -140,100 +140,105 @@ function injectOverlayStyles() {
   style.id = 'zoom-overlay-styles';
   style.textContent = `
     .zoomOverlay {
-      position: fixed;
-      top: 0;
-      right: 32%;
-      background: #1f1f1f;
-      color: #c7c7c7;
-      padding: 0 17px;
-      border-radius: 16px;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      width: 220px;
-      height: 50px;
-      font-family: helvetica;
-      justify-content: space-between;
-      font-size: 13px;
-      transform-origin: top right;
-      box-shadow: 0 4px 8px #0000004d;
+    position: fixed;
+    top: 0;
+    right: 32%;
+    background: #1f1f1f;
+    color: #c7c7c7;
+    padding: 0 17px;
+    border-radius: 16px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    width: 220px;
+    height: 50px;
+    font-family: helvetica;
+    justify-content: space-between;
+    font-size: 13px;
+    transform-origin: top right;
+    box-shadow: 0 4px 8px #0000004d;
+    user-select: none;
     }
 
     .rightWrap {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      width: 128px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 128px;
     }
 
     .button {
-      cursor: pointer;
-      user-select: none;
-      font-size: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    font-size: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 32px;
+    width: 29px;
+    transition: 0.5s;
     }
 
-    .blueButton {
-      border: #047cb6 2px solid;
-      border-radius: 32px;
-      display: flex;
-      height: 35px;
-      width: 60px;
-      background: none;
-      color: #a8c7fa;
-      font-size: 13px;
-      align-items: center;
-      justify-content: center;
+    .buttonHover:hover, .resetButton:hover {
+    background: #343434;
+    }
+
+    .resetButton {
+    border: #047cb6 2px solid;
+    display: flex;
+    height: 35px;
+    width: 60px;
+    background: none;
+    color: #a8c7fa;
+    font-size: 13px;
+    align-items: center;
+    justify-content: center;
     }
 
     .grey {
-      color: #5f5f5f;
+    color: #5f5f5f;
     }
 
     .appear {
-      animation: appear 0.3s linear;
+    animation: appear 0.3s linear;
     }
 
     .disappear {
-      animation: disappear 0.3s linear;
+    animation: disappear 0.3s linear;
     }
 
     @keyframes appear {
-      0% {
+    0% {
         opacity: 0;
-      }
-      100% {
+    }
+    100% {
         opacity: 1;
-      }
+    }
     }
 
     @keyframes disappear {
-      0% {
+    0% {
         opacity: 1;
-      }
-      100% {
+    }
+    100% {
         opacity: 0;
-      }
+    }
     }
 
     @media (prefers-color-scheme: light) {
         .zoomOverlay {
-          background: white;
-          color: black;
+        background: white;
+        color: black;
         }
         
         .blueButton {
-          border: #a9c8fa 2px solid;
-          color: #0b57d0;
-          background: none;
+        border: #a9c8fa 2px solid;
+        color: #0b57d0;
+        background: none;
         }
         
         .grey {
-          color: #b9b9b9;
+        color: #b9b9b9;
         }
     }
   `;
@@ -245,12 +250,12 @@ function injectOverlayStyles() {
 function createOverlayFromTemplate() {
   const template = `
     <div class="zoomOverlay appear" style="display: none;">
-      <div class="zoomCounter">${zoomLevels[currentZoomIndex]}%</div>
-      <div class="rightWrap">
-        <div class="zoomOutButton button signButton">-</div>
-        <div class="zoomInButton button signButton">+</div>
-        <div class="resetButton button blueButton">Reset</div>
-      </div>
+        <div class="zoomCounter">100%</div>
+        <div class="rightWrap">
+            <div class="signButton button buttonHover" title="Make Text Smaller">-</div>
+            <div class="signButton button buttonHover" title="Make Text Larger">+</div>
+            <div class="resetButton button" title="Reset to default zoom level">Reset</div>
+        </div>
     </div>
   `;
   
@@ -261,8 +266,9 @@ function createOverlayFromTemplate() {
 
 // Add event listeners to overlay elements
 function addOverlayEventListeners(overlay) {
-  const zoomOutButton = overlay.querySelector('.zoomOutButton');
-  const zoomInButton = overlay.querySelector('.zoomInButton');
+  const signButtons = overlay.querySelectorAll('.signButton');
+  const zoomOutButton = signButtons[0];
+  const zoomInButton = signButtons[1];
   const resetButton = overlay.querySelector('.resetButton');
 
   zoomOutButton.addEventListener('click', decreaseZoomLevel);

@@ -17,6 +17,7 @@
   font-size: 13px;
   transform-origin: top right;
   box-shadow: 0 4px 8px #0000004d;
+  user-select: none;
 }
 
 .rightWrap {
@@ -28,17 +29,21 @@
 }
 
 .button {
-  cursor: pointer;
-  user-select: none;
   font-size: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 32px;
+  width: 29px;
+  transition: 0.5s;
 }
 
-.blueButton {
+.buttonHover:hover, .resetButton:hover {
+  background: #343434;
+}
+
+.resetButton {
   border: #047cb6 2px solid;
-  border-radius: 32px;
   display: flex;
   height: 35px;
   width: 60px;
