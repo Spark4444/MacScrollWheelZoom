@@ -4,8 +4,16 @@
    "description": "Scroll wheel zooming for MacOS/Linux from Windows",
    "version": "0.7.5",
     "permissions": [
-      "storage"
+      "storage",
+      "activeTab",
+      "scripting"
     ],
+    "background": {
+      "service_worker": "js/background.js"
+    },
+    "action": {
+      "default_title": "Toggle Zoom Overlay"
+    },
    "content_scripts": [
       {
         "matches": ["<all_urls>"],
@@ -17,18 +25,12 @@
         ]
       }
     ],
-    "web_accessible_resources": [
-      {
-        "resources": ["img/minusZoom.svg", "img/plusZoom.svg"],
-        "matches": ["<all_urls>"]
-      }
-    ],
    "icons": {
-      "16": "img/cat16.png",
-      "32": "img/cat32.png",
-      "48": "img/cat48.png",
-      "64": "img/cat64.png",
-      "96": "img/cat96.png",
-      "128": "img/cat128.png"
+      "16": "img/16.png",
+      "32": "img/32.png",
+      "48": "img/48.png",
+      "64": "img/64.png",
+      "96": "img/96.png",
+      "128": "img/128.png"
    }
 }

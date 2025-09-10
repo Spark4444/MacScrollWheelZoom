@@ -44,6 +44,7 @@
 
 .resetButton {
   border: #047cb6 2px solid;
+  cursor: pointer;
   display: flex;
   height: 35px;
   width: 60px;

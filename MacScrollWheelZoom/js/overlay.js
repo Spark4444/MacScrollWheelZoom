@@ -9,9 +9,8 @@ const resetZoom = currentZoomIndex;
 
 let overlayTimeout, disappearTimeout;
 
-// Get URLs for zoom button images
-const minusZoomImage = chrome.runtime.getURL('img/minus_zoom.svg');
-const plusZoomImage = chrome.runtime.getURL('img/plus_zoom.svg');
+// This variable prevents it hiding when user toggled it through the extension icon
+let canHideOverlay = true;
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
@@ -20,6 +19,7 @@ function setButtonGrey(index) {
     const currentButton = buttons[index];
     currentButton.classList.add('grey');
     currentButton.classList.remove('buttonHover');
+    currentButton.style.cursor = '';
   }
 }
 
@@ -29,6 +29,7 @@ function resetButton(index) {
     const currentButton = buttons[index];
     currentButton.classList.remove('grey');
     currentButton.classList.add('buttonHover');
+    currentButton.style.cursor = 'pointer';
   }
 }
 
@@ -37,6 +38,7 @@ function resetAllButtons() {
   buttons.forEach((button) => {
     button.classList.remove('grey');
     button.classList.add('buttonHover');
+    button.style.cursor = 'pointer';
   });
 }
 
@@ -87,20 +89,58 @@ function updateOverlay() {
   updateZoomCounter();
 }
 
+function clearTimeouts() {
+  if (overlayTimeout) clearTimeout(overlayTimeout);
+  if (disappearTimeout) clearTimeout(disappearTimeout);
+}
+
 // Function to hide overlay after a delay
 function hideOverlay(delay = 2000) {
+    if (canHideOverlay) {
+        const overlay = document.querySelector('.zoomOverlay');
+        if (overlay) {
+            overlay.style.display = '';
+            clearTimeouts();
+            overlayTimeout = setTimeout(() => {
+            overlay.classList.remove('disappear');
+            overlay.style.display = 'none';
+            }, delay);
+            disappearTimeout = setTimeout(() => {
+            overlay.classList.add('disappear');
+            }, delay - 300);
+        }
+    }
+}
+
+// Function to hide overlay immediately without animation
+function hideOverlayImmediate() {
+    const overlay = document.querySelector('.zoomOverlay');
+    if (overlay) {
+        clearTimeouts();
+        canHideOverlay = true;
+        overlay.classList.remove('disappear');
+        overlay.style.display = 'none';
+    }
+}
+
+// Function to show or hide the overlay manually
+function showHideOverlay() {
   const overlay = document.querySelector('.zoomOverlay');
   if (overlay) {
-    overlay.style.display = '';
-    if (overlayTimeout) clearTimeout(overlayTimeout);
-    if (disappearTimeout) clearTimeout(disappearTimeout);
-    overlayTimeout = setTimeout(() => {
-      overlay.classList.remove('disappear');
-      overlay.style.display = 'none';
-    }, delay);
-    disappearTimeout = setTimeout(() => {
-      overlay.classList.add('disappear');
-    }, delay - 300);
+    clearTimeouts();
+    if (overlay.style.display === '') {
+        overlay.classList.add('disappear');
+        disappearTimeout = setTimeout(() => {
+            canHideOverlay = true;
+          overlay.style.display = 'none';
+          overlay.classList.remove('disappear');
+        }, 300);
+    }
+    else if (overlay.style.display === 'none') {
+        canHideOverlay = false;
+        overlay.classList.remove('disappear');
+        overlay.style.display = '';
+    }
   }
 }
 
@@ -185,6 +225,7 @@ function injectOverlayStyles() {
 
     .resetButton {
     border: #047cb6 2px solid;
+    cursor: pointer;
     display: flex;
     height: 35px;
     width: 60px;
