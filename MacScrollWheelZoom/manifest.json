@@ -1,8 +1,8 @@
 {
    "manifest_version": 3,
    "name": "Mac Scroll Wheel Zoom",
-   "description": "Scroll wheel zooming for MacOS/Linux from Windows",
-   "version": "0.7.5",
+   "description": "Scroll wheel zooming for MacOS from Windows",
+   "version": "1.0.0",
     "permissions": [
       "storage",
       "activeTab",
@@ -19,6 +19,7 @@
         "matches": ["<all_urls>"],
         "js": [
           "js/functions.js",
+          "js/cssStyles.js",
           "js/overlay.js",
           "js/zoom.js",
           "js/events.js"

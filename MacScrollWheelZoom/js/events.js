@@ -13,16 +13,10 @@ window.addEventListener('beforeunload', () => {
   updateValueOfCurrentWebsiteZoom();
 });
 
-// Also save when the page visibility changes (e.g., switching tabs)
+// Also save when the page visibility changes (e.g., switching tabs) and hide overlay
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     updateValueOfCurrentWebsiteZoom();
-  }
-});
-
-//Hide overlay when user switches tab or window
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
     hideOverlayImmediate();
   }
 });

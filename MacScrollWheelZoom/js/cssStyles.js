@@ -1,4 +1,4 @@
-.zoomOverlay {
+const cssStyles = `.zoomOverlay {
     position: fixed;
     top: 0;
     right: 32%;
@@ -129,4 +129,4 @@
     .grey {
       color: #b9b9b9;
     }
-}
+}`

@@ -1,0 +1,1 @@
+1. Add different icons for the pop up depending on the state of the zoom

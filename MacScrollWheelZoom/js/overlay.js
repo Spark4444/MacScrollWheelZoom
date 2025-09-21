@@ -172,117 +172,13 @@ function decreaseZoomLevel() {
 
 // Inject CSS styles dynamically
 function injectOverlayStyles() {
-  if (document.querySelector('#zoom-overlay-styles')) {
+  if (document.querySelector('#zoomOverlayStyles')) {
     return; // Already injected
   }
 
   const style = document.createElement('style');
-  style.id = 'zoom-overlay-styles';
-  style.textContent = `
-    .zoomOverlay {
-    position: fixed;
-    top: 0;
-    right: 32%;
-    background: #1f1f1f;
-    color: #c7c7c7;
-    padding: 0 17px;
-    border-radius: 16px;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    width: 220px;
-    height: 50px;
-    font-family: helvetica;
-    justify-content: space-between;
-    font-size: 13px;
-    transform-origin: top right;
-    box-shadow: 0 4px 8px #0000004d;
-    user-select: none;
-    }
-
-    .rightWrap {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 128px;
-    }
-
-    .button {
-    font-size: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 32px;
-    width: 29px;
-    transition: 0.5s;
-    }
-
-    .buttonHover:hover, .resetButton:hover {
-    background: #343434;
-    }
-
-    .resetButton {
-    border: #047cb6 2px solid;
-    cursor: pointer;
-    display: flex;
-    height: 35px;
-    width: 60px;
-    background: none;
-    color: #a8c7fa;
-    font-size: 13px;
-    align-items: center;
-    justify-content: center;
-    }
-
-    .grey {
-    color: #5f5f5f;
-    }
-
-    .appear {
-    animation: appear 0.3s linear;
-    }
-
-    .disappear {
-    animation: disappear 0.3s linear;
-    }
-
-    @keyframes appear {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-    }
-
-    @keyframes disappear {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-    }
-
-    @media (prefers-color-scheme: light) {
-        .zoomOverlay {
-        background: white;
-        color: black;
-        }
-        
-        .blueButton {
-        border: #a9c8fa 2px solid;
-        color: #0b57d0;
-        background: none;
-        }
-        
-        .grey {
-        color: #b9b9b9;
-        }
-    }
-  `;
+  style.id = 'zoomOverlayStyles';
+  style.textContent = cssStyles;
   
   document.head.appendChild(style);
 }
