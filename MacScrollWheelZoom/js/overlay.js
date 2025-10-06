@@ -14,32 +14,41 @@ let canHideOverlay = true;
 
 // Functions to set and reset button greyed out state
 function setButtonGrey(index) {
-  const buttons = document.querySelectorAll('.signButton');
-  if (buttons[index]) {
-    const currentButton = buttons[index];
-    currentButton.classList.add('grey');
-    currentButton.classList.remove('buttonHover');
-    currentButton.style.cursor = '';
+  const overlay = document.querySelector('.zoomOverlay');
+  if (overlay) {
+    const buttons = overlay.querySelectorAll('.zoomSignButton');
+    if (buttons[index]) {
+      const currentButton = buttons[index];
+      currentButton.classList.add('zoomGrey');
+      currentButton.classList.remove('zoomButtonHover');
+      currentButton.style.cursor = '';
+    }
   }
 }
 
 function resetButton(index) {
-  const buttons = document.querySelectorAll('.signButton');
-  if (buttons[index]) {
-    const currentButton = buttons[index];
-    currentButton.classList.remove('grey');
-    currentButton.classList.add('buttonHover');
-    currentButton.style.cursor = 'pointer';
+  const overlay = document.querySelector('.zoomOverlay');
+  if (overlay) {
+    const buttons = overlay.querySelectorAll('.zoomSignButton');
+    if (buttons[index]) {
+      const currentButton = buttons[index];
+      currentButton.classList.remove('zoomGrey');
+      currentButton.classList.add('zoomButtonHover');
+      currentButton.style.cursor = 'pointer';
+    }
   }
 }
 
 function resetAllButtons() {
-  const buttons = document.querySelectorAll('.signButton');
-  buttons.forEach((button) => {
-    button.classList.remove('grey');
-    button.classList.add('buttonHover');
-    button.style.cursor = 'pointer';
-  });
+  const overlay = document.querySelector('.zoomOverlay');
+  if (overlay) {
+    const buttons = overlay.querySelectorAll('.zoomSignButton');
+    buttons.forEach((button) => {
+      button.classList.remove('zoomGrey');
+      button.classList.add('zoomButtonHover');
+      button.style.cursor = 'pointer';
+    });
+  }
 }
 
 // Functions to set and reset button greyed out state
@@ -102,11 +111,11 @@ function hideOverlay(delay = 2000) {
             overlay.style.display = '';
             clearTimeouts();
             overlayTimeout = setTimeout(() => {
-            overlay.classList.remove('disappear');
+            overlay.classList.remove('zoomDisappear');
             overlay.style.display = 'none';
             }, delay);
             disappearTimeout = setTimeout(() => {
-            overlay.classList.add('disappear');
+            overlay.classList.add('zoomDisappear');
             }, delay - 300);
         }
     }
@@ -118,7 +127,7 @@ function hideOverlayImmediate() {
     if (overlay) {
         clearTimeouts();
         canHideOverlay = true;
-        overlay.classList.remove('disappear');
+        overlay.classList.remove('zoomDisappear');
         overlay.style.display = 'none';
     }
 }
@@ -129,16 +138,16 @@ function showHideOverlay() {
   if (overlay) {
     clearTimeouts();
     if (overlay.style.display === '') {
-        overlay.classList.add('disappear');
+        overlay.classList.add('zoomDisappear');
         disappearTimeout = setTimeout(() => {
             canHideOverlay = true;
           overlay.style.display = 'none';
-          overlay.classList.remove('disappear');
+          overlay.classList.remove('zoomDisappear');
         }, 300);
     }
     else if (overlay.style.display === 'none') {
         canHideOverlay = false;
-        overlay.classList.remove('disappear');
+        overlay.classList.remove('zoomDisappear');
         overlay.style.display = '';
     }
   }
@@ -186,12 +195,12 @@ function injectOverlayStyles() {
 // Create overlay from template
 function createOverlayFromTemplate() {
   const template = `
-    <div class="zoomOverlay appear" style="display: none;">
+    <div class="zoomOverlay zoomAppear" style="display: none;">
         <div class="zoomCounter">100%</div>
-        <div class="rightWrap">
-            <div class="signButton button buttonHover" title="Make Text Smaller">-</div>
-            <div class="signButton button buttonHover" title="Make Text Larger">+</div>
-            <div class="resetButton button" title="Reset to default zoom level">Reset</div>
+        <div class="zoomRightWrap">
+            <div class="zoomSignButton zoomButton zoomButtonHover" title="Make Text Smaller">-</div>
+            <div class="zoomSignButton zoomButton zoomButtonHover" title="Make Text Larger">+</div>
+            <div class="zoomResetButton zoomButton" title="Reset to default zoom level">Reset</div>
         </div>
     </div>
   `;
@@ -203,10 +212,10 @@ function createOverlayFromTemplate() {
 
 // Add event listeners to overlay elements
 function addOverlayEventListeners(overlay) {
-  const signButtons = overlay.querySelectorAll('.signButton');
+  const signButtons = overlay.querySelectorAll('.zoomSignButton');
   const zoomOutButton = signButtons[0];
   const zoomInButton = signButtons[1];
-  const resetButton = overlay.querySelector('.resetButton');
+  const resetButton = overlay.querySelector('.zoomResetButton');
 
   zoomOutButton.addEventListener('click', decreaseZoomLevel);
   zoomInButton.addEventListener('click', increaseZoomLevel);

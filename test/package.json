@@ -1,10 +1,11 @@
 {
   "name": "update",
   "description": "script to update css styles in the js/cssStyles.js file",
+  "type": "module",
   "version": "1.0.0",
   "main": "update.js",
   "scripts": {
-    "test": "node update.js"
+    "update": "node update.js"
   },
   "keywords": [],
   "author": "",

@@ -6,7 +6,7 @@
     color: #c7c7c7;
     padding: 0 17px;
     border-radius: 16px;
-    z-index: 10000;
+    z-index: 2147483647;
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -18,66 +18,74 @@
     transform-origin: top right;
     box-shadow: 0 4px 8px #0000004d;
     user-select: none;
+    pointer-events: auto;
 }
-.rightWrap {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 128px;
-}
-
-.button {
-    font-size: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 32px;
-    width: 25px;
-    height: 25px;
-    transition: background 0.5s;
+.zoomOverlay .zoomRightWrap {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 128px !important;
 }
 
-.buttonHover:hover {
-  background: #343434;
+.zoomOverlay .zoomButton {
+    font-size: 25px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 32px !important;
+    width: 25px !important;
+    height: 25px !important;
+    transition: background 0.5s !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    outline: none !important;
 }
 
-.resetButton:hover {
-  background: #363636;
+.zoomOverlay .zoomButtonHover:hover {
+  background: #343434 !important;
 }
 
-.buttonHover:active {
-  background: #4e4e4e;
+.zoomOverlay .zoomResetButton:hover {
+  background: #363636 !important;
 }
 
-.resetButton:active {
-  background: #3a3a3a;
+.zoomOverlay .zoomButtonHover:active {
+  background: #4e4e4e !important;
 }
 
-.resetButton {
-    border: #047cb6 2px solid;
-    cursor: pointer;
-    display: flex;
-    height: 38px;
-    width: 64px;
-    background: none;
-    color: #a8c7fa;
-    font-size: 13px;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.5s;
+.zoomOverlay .zoomResetButton:active {
+  background: #3a3a3a !important;
 }
 
-.grey {
-  color: #5f5f5f;
+.zoomOverlay .zoomResetButton {
+    border: #047cb6 2px solid !important;
+    cursor: pointer !important;
+    display: flex !important;
+    height: 38px !important;
+    width: 64px !important;
+    background: none !important;
+    color: #a8c7fa !important;
+    font-size: 13px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.5s !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    outline: none !important;
 }
 
-.appear {
-  animation: appear 0.3s linear;
+.zoomOverlay .zoomGrey {
+  color: #5f5f5f !important;
 }
 
-.disappear {
-  animation: disappear 0.3s linear;
+.zoomOverlay.zoomAppear {
+  animation: appear 0.3s linear !important;
+}
+
+.zoomOverlay.zoomDisappear {
+  animation: disappear 0.3s linear !important;
 }
 
 @keyframes appear {
@@ -104,29 +112,29 @@
       color: black;
     }
 
-    .buttonHover:hover {
-      background: #cfcfcf;
+    .zoomOverlay .zoomButtonHover:hover {
+      background: #cfcfcf !important;
     }
 
-    .resetButton:hover {
-      background: #f2f2f2;
+    .zoomOverlay .zoomResetButton:hover {
+      background: #f2f2f2 !important;
     }
 
-    .buttonHover:active {
-      background: #cccccc;
+    .zoomOverlay .zoomButtonHover:active {
+      background: #cccccc !important;
     }
 
-    .resetButton:active {
-      background: #efefef;
+    .zoomOverlay .zoomResetButton:active {
+      background: #efefef !important;
     }
-    
-    .resetButton {
-      border: #a8c7fa 2px solid;
-      color: #0b5ad6;
-      background: none;
+
+    .zoomOverlay .zoomResetButton {
+      border: #a8c7fa 2px solid !important;
+      color: #0b5ad6 !important;
+      background: none !important;
     }
-    
-    .grey {
-      color: #b9b9b9;
+
+    .zoomOverlay .zoomGrey {
+      color: #b9b9b9 !important;
     }
 }
